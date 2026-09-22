@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mis gastos</title>
+<style>
+  :root{
+    --bg:#f6f7fb;
+    --card:#ffffff;
+    --text:#1f2937;
+    --muted:#6b7280;
+    --border:#e5e7eb;
+    --spotify:#1db954;
+    --gym:#7c3aed;
+    --comida:#f59e0b;
+    --gasoil:#3b82f6;
+    --ocio:#ec4899;
+    --ahorro:#10b981;
+    --danger:#ef4444;
+  }
+
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family:Arial, Helvetica, sans-serif;
+    background:var(--bg);
+    color:var(--text);
+  }
+  .wrap{
+    max-width:1050px;
+    margin:0 auto;
+    padding:28px 18px 40px;
+  }
+  h1{margin:0 0 6px;font-size:32px}
+  .sub{color:var(--muted);margin-bottom:24px}
+  .top{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:14px;
+    margin-bottom:22px;
+  }
+  .summary{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:18px;
+    box-shadow:0 4px 14px rgba(0,0,0,.04);
+  }
+  .summary .label{color:var(--muted);font-size:14px}
+  .summary .value{font-size:28px;font-weight:700;margin-top:6px}
+  .section-title{margin:28px 0 12px;font-size:20px}
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:14px;
+  }
+  .card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:18px;
+    box-shadow:0 4px 14px rgba(0,0,0,.04);
+    border-left:8px solid var(--accent);
+  }
+  .row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+  }
+  .name{
+    font-size:19px;
+    font-weight:700;
+  }
+  .amount{
+    font-weight:700;
+  }
+  .muted{color:var(--muted);font-size:14px}
+  .bar{
+    width:100%;
+    height:12px;
+    border-radius:999px;
+    background:#eef0f4;
+    overflow:hidden;
+    margin:12px 0 8px;
+  }
+  .fill{
+    height:100%;
+    width:0%;
+    background:var(--accent);
+    transition:width .2s ease;
+  }
+  .controls{
+    display:flex;
+    gap:8px;
+    margin-top:14px;
+  }
+  input[type=number]{
+    flex:1;
+    min-width:0;
+    padding:10px 12px;
+    border:1px solid var(--border);
+    border-radius:10px;
+    font-size:15px;
+  }
+  button{
+    border:0;
+    border-radius:10px;
+    padding:10px 14px;
+    cursor:pointer;
+    font-weight:700;
+  }
+  .add{
+    background:var(--accent);
+    color:white;
+  }
+  .reset{
+    background:#f3f4f6;
+    color:#374151;
+  }
+  .danger{
+    color:var(--danger);
+    font-weight:700;
+  }
+  .fixed-list{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:14px;
+  }
+  .fixed{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:18px;
+    border-left:8px solid var(--accent);
+  }
+  .budget-box{
+    margin-top:18px;
+    background:#111827;
+    color:white;
+    border-radius:16px;
+    padding:18px;
+  }
+  .budget-box input{
+    width:180px;
+    margin-left:8px;
+  }
+
+  .month-nav{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:12px;
+    margin:18px 0 22px;
+  }
+  .month-nav button{
+    background:#ffffff;
+    border:1px solid var(--border);
+    color:#374151;
+    min-width:42px;
+  }
+  .month-title{
+    min-width:190px;
+    text-align:center;
+    font-size:20px;
+    font-weight:700;
+    text-transform:capitalize;
+  }
+
+  @media (max-width:760px){
+    .top,.grid,.fixed-list{grid-template-columns:1fr}
+    .controls{flex-direction:column}
+    .budget-box input{width:100%;margin:8px 0 0}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Mis gastos</h1>
+  <div class="sub">Control mensual de presupuestos y gastos</div>
+
+  <div class="month-nav">
+    <button onclick="changeMonth(-1)">←</button>
+    <div class="month-title" id="monthTitle"></div>
+    <button onclick="changeMonth(1)">→</button>
+  </div>
+
+  <div class="budget-box">
+    Presupuesto total del mes:
+    <input id="monthlyBudget" type="number" step="0.01" min="0" value="489.49">
+    <button onclick="updateAll()">Actualizar</button>
+    
+  </div>
+
+  <div class="top">
+    <div class="summary">
+      <div class="label">Presupuesto mensual</div>
+      <div class="value" id="totalBudget">489,49 €</div>
+    </div>
+    <div class="summary">
+      <div class="label">Gastado / asignado</div>
+      <div class="value" id="totalSpent">33,49 €</div>
+    </div>
+    <div class="summary">
+      <div class="label">Disponible</div>
+      <div class="value" id="remaining">456,00 €</div>
+    </div>
+  </div>
+
+  <div class="section-title">Gastos fijos</div>
+  <div class="fixed-list">
+    <div class="fixed" style="--accent:var(--spotify)">
+      <div class="row">
+        <div>
+          <div class="name">Spotify</div>
+          <div class="muted">Gasto fijo mensual</div>
+        </div>
+        <div class="amount">6,49 €</div>
+      </div>
+    </div>
+    <div class="fixed" style="--accent:var(--gym)">
+      <div class="row">
+        <div>
+          <div class="name">Gym</div>
+          <div class="muted">Gasto fijo mensual</div>
+        </div>
+        <div class="amount">27,00 €</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">Presupuestos del mes</div>
+  <div class="grid">
+
+    <div class="card" style="--accent:var(--comida)" data-name="Comida" data-budget="100">
+      <div class="row">
+        <div>
+          <div class="name">Comida</div>
+          <div class="muted">Presupuesto: 100,00 €</div>
+        </div>
+        <div class="amount"><span class="spent">0,00</span> € / 100,00 €</div>
+      </div>
+      <div class="bar"><div class="fill"></div></div>
+      <div class="muted status">Te quedan 100,00 €</div>
+      <div class="controls">
+        <input type="number" step="0.01" min="0" placeholder="Añadir gasto (€)">
+        <button class="add" onclick="addExpense(this)">Añadir</button>
+        <button class="reset" onclick="resetCategory(this)">Reiniciar</button>
+      </div>
+    </div>
+
+    <div class="card" style="--accent:var(--gasoil)" data-name="Gasoil" data-budget="100">
+      <div class="row">
+        <div>
+          <div class="name">Gasoil</div>
+          <div class="muted">Presupuesto: 100,00 €</div>
+        </div>
+        <div class="amount"><span class="spent">0,00</span> € / 100,00 €</div>
+      </div>
+      <div class="bar"><div class="fill"></div></div>
+      <div class="muted status">Te quedan 100,00 €</div>
+      <div class="controls">
+        <input type="number" step="0.01" min="0" placeholder="Añadir gasto (€)">
+        <button class="add" onclick="addExpense(this)">Añadir</button>
+        <button class="reset" onclick="resetCategory(this)">Reiniciar</button>
+      </div>
+    </div>
+
+    <div class="card" style="--accent:var(--ocio)" data-name="Ocio" data-budget="150">
+      <div class="row">
+        <div>
+          <div class="name">Ocio</div>
+          <div class="muted">Presupuesto: 150,00 €</div>
+        </div>
+        <div class="amount"><span class="spent">0,00</span> € / 150,00 €</div>
+      </div>
+      <div class="bar"><div class="fill"></div></div>
+      <div class="muted status">Te quedan 150,00 €</div>
+      <div class="controls">
+        <input type="number" step="0.01" min="0" placeholder="Añadir gasto (€)">
+        <button class="add" onclick="addExpense(this)">Añadir</button>
+        <button class="reset" onclick="resetCategory(this)">Reiniciar</button>
+      </div>
+    </div>
+
+    <div class="card" style="--accent:var(--ahorro)" data-name="Ahorro" data-budget="100">
+      <div class="row">
+        <div>
+          <div class="name">Ahorro</div>
+          <div class="muted">Objetivo: 100,00 €</div>
+        </div>
+        <div class="amount"><span class="spent">0,00</span> € / 100,00 €</div>
+      </div>
+      <div class="bar"><div class="fill"></div></div>
+      <div class="muted status">Te faltan 100,00 € por ahorrar</div>
+      <div class="controls">
+        <input type="number" step="0.01" min="0" placeholder="Añadir ahorro (€)">
+        <button class="add" onclick="addExpense(this)">Añadir</button>
+        <button class="reset" onclick="resetCategory(this)">Reiniciar</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const FIXED = 6.49 + 27;
+
+let currentDate = new Date();
+currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+
+function money(n){
+  return n.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' €';
+}
+
+function monthKey(){
+  return currentDate.getFullYear() + '-' + String(currentDate.getMonth()+1).padStart(2,'0');
+}
+
+function storageKey(card){
+  return 'misgastos_' + monthKey() + '_' + card.dataset.name.toLowerCase();
+}
+
+function budgetStorageKey(){
+  return 'misgastos_' + monthKey() + '_monthlyBudget';
+}
+
+function updateMonthTitle(){
+  const txt = currentDate.toLocaleDateString('es-ES',{month:'long',year:'numeric'});
+  document.getElementById('monthTitle').textContent = txt;
+}
+
+function changeMonth(delta){
+  currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth()+delta, 1);
+  loadMonth();
+}
+
+function loadMonth(){
+  updateMonthTitle();
+
+  document.querySelectorAll('.card').forEach(card=>{
+    const saved = parseFloat(localStorage.getItem(storageKey(card)) || '0');
+    card.dataset.spent = saved;
+    renderCard(card);
+  });
+
+  const savedBudget = localStorage.getItem(budgetStorageKey());
+  document.getElementById('monthlyBudget').value = savedBudget !== null ? savedBudget : '489.49';
+
+  updateSummary();
+}
+
+function addExpense(btn){
+  const card = btn.closest('.card');
+  const input = card.querySelector('input');
+  const value = parseFloat(input.value);
+
+  if(isNaN(value) || value <= 0){
+    alert('Introduce una cantidad válida.');
+    return;
+  }
+
+  const current = parseFloat(card.dataset.spent || '0');
+  const updated = current + value;
+  card.dataset.spent = updated;
+  localStorage.setItem(storageKey(card), updated);
+  input.value = '';
+  renderCard(card);
+  updateSummary();
+}
+
+function resetCategory(btn){
+  const card = btn.closest('.card');
+  if(confirm('¿Quieres reiniciar esta categoría a 0 €?')){
+    card.dataset.spent = 0;
+    localStorage.setItem(storageKey(card), '0');
+    renderCard(card);
+    updateSummary();
+  }
+}
+
+function renderCard(card){
+  const budget = parseFloat(card.dataset.budget);
+  const spent = parseFloat(card.dataset.spent || '0');
+  const pct = Math.min((spent / budget) * 100, 100);
+  const name = card.dataset.name;
+  const status = card.querySelector('.status');
+
+  card.querySelector('.spent').textContent =
+    spent.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2});
+  card.querySelector('.fill').style.width = pct + '%';
+
+  if(name === 'Ahorro'){
+    const left = budget - spent;
+    if(left > 0){
+      status.textContent = 'Te faltan ' + money(left) + ' por ahorrar';
+      status.classList.remove('danger');
+    }else{
+      status.textContent = 'Objetivo de ahorro cumplido';
+      status.classList.remove('danger');
+    }
+  }else{
+    const left = budget - spent;
+    if(left >= 0){
+      status.textContent = 'Te quedan ' + money(left);
+      status.classList.remove('danger');
+    }else{
+      status.textContent = 'Te has pasado ' + money(Math.abs(left));
+      status.classList.add('danger');
+    }
+  }
+}
+
+function updateSummary(){
+  let variableSpent = 0;
+  let savings = 0;
+
+  document.querySelectorAll('.card').forEach(card=>{
+    const val = parseFloat(card.dataset.spent || '0');
+    if(card.dataset.name === 'Ahorro') savings += val;
+    else variableSpent += val;
+  });
+
+  const budget = parseFloat(document.getElementById('monthlyBudget').value || '0');
+  localStorage.setItem(budgetStorageKey(), budget);
+
+  const assigned = FIXED + variableSpent + savings;
+  const remaining = budget - assigned;
+
+  document.getElementById('totalBudget').textContent = money(budget);
+  document.getElementById('totalSpent').textContent = money(assigned);
+  document.getElementById('remaining').textContent = money(remaining);
+  document.getElementById('remaining').style.color = remaining < 0 ? 'var(--danger)' : 'inherit';
+}
+
+function updateAll(){
+  updateSummary();
+}
+
+loadMonth();
+</script>
+</body>
+</html>
