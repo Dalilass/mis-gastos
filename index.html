@@ -16,7 +16,10 @@
     --comida:#f59e0b;
     --gasoil:#3b82f6;
     --ocio:#ec4899;
-    --ahorro:#10b981;
+    --compras:#64748b;
+    --extra:#0891b2;
+    --piso:#c56a3a;
+    --ahorro:#059669;
     --danger:#ef4444;
   }
 
@@ -36,7 +39,7 @@
   .sub{color:var(--muted);margin-bottom:24px}
   .top{
     display:grid;
-    grid-template-columns:repeat(3,1fr);
+    grid-template-columns:repeat(4,minmax(0,1fr));
     gap:14px;
     margin-bottom:22px;
   }
@@ -168,17 +171,20 @@
     text-transform:capitalize;
   }
 
+  .summary .value { font-size:clamp(19px,2.6vw,28px); overflow-wrap:anywhere; }
+  .savings-card { background:#ecfdf5; border-color:#bbf7d0; }
+  .savings-amount { font-size:34px; font-weight:700; color:#047857; margin:12px 0 5px; }
+  .savings-card.overdrawn { background:#fff1f2; border-color:#fecdd3; }
+  .savings-card.overdrawn .savings-amount { color:#be123c; }
+  .movement-total { font-size:23px; font-weight:700; margin-top:10px; }
+  .budget-box button { margin-left:8px; }
+  @media (max-width:900px){.top{grid-template-columns:repeat(2,minmax(0,1fr))}}
   @media (max-width:760px){
     .top,.grid,.fixed-list{grid-template-columns:1fr}
     .controls{flex-direction:column}
     .budget-box input{width:100%;margin:8px 0 0}
+    .budget-box button{display:block;margin:14px 0 0;}
   }
-  
-@media (max-width: 760px) {
-    .budget-box button {
-        margin-top: 14px;
-    }
-}
 </style>
 </head>
 <body>
@@ -200,18 +206,10 @@
   </div>
 
   <div class="top">
-    <div class="summary">
-      <div class="label">Presupuesto mensual</div>
-      <div class="value" id="totalBudget">489,49 €</div>
-    </div>
-    <div class="summary">
-      <div class="label">Gastado / asignado</div>
-      <div class="value" id="totalSpent">33,49 €</div>
-    </div>
-    <div class="summary">
-      <div class="label">Disponible</div>
-      <div class="value" id="remaining">456,00 €</div>
-    </div>
+    <div class="summary"><div class="label">Presupuesto mensual</div><div class="value" id="totalBudget">489,49 €</div></div>
+    <div class="summary"><div class="label">Ingreso extra</div><div class="value" id="totalIncome">0,00 €</div></div>
+    <div class="summary"><div class="label">Gastos del mes</div><div class="value" id="totalSpent">33,49 €</div></div>
+    <div class="summary"><div class="label">Disponible</div><div class="value" id="remaining">456,00 €</div></div>
   </div>
 
   <div class="section-title">Gastos fijos</div>
@@ -290,160 +288,169 @@
       </div>
     </div>
 
-    <div class="card" style="--accent:var(--ahorro)" data-name="Ahorro" data-budget="100">
+  </div>
+
+  <div class="section-title">Otros movimientos</div>
+  <div class="grid">
+    <div class="card" style="--accent:var(--compras)" data-name="Compras varias" data-kind="expense">
       <div class="row">
-        <div>
-          <div class="name">Ahorro</div>
-          <div class="muted">Objetivo: 100,00 €</div>
-        </div>
-        <div class="amount"><span class="spent">0,00</span> € / 100,00 €</div>
+        <div><div class="name">Compras varias</div><div class="muted">Sin límite de presupuesto · resta de tu disponible</div></div>
       </div>
-      <div class="bar"><div class="fill"></div></div>
-      <div class="muted status">Te faltan 100,00 € por ahorrar</div>
+      <div class="movement-total">Gastado: <span class="spent">0,00</span> €</div>
       <div class="controls">
-        <input type="number" step="0.01" min="0" placeholder="Añadir ahorro (€)">
-        <button class="add" onclick="addExpense(this)">Añadir</button>
+        <input type="number" inputmode="decimal" step="0.01" min="0" placeholder="Añadir compra (€)" aria-label="Importe de compras varias">
+        <button class="add" onclick="addExpense(this)">Añadir compra</button>
         <button class="reset" onclick="resetCategory(this)">Reiniciar</button>
       </div>
     </div>
+    <div class="card" style="--accent:var(--extra)" data-name="Ingreso extra" data-storage="blablacar" data-kind="income">
+      <div class="row">
+        <div><div class="name">Ingreso extra</div><div class="muted">Ingresos adicionales · suma a tu disponible</div></div>
+      </div>
+      <div class="movement-total">Ingresado: +<span class="spent">0,00</span> €</div>
+      <div class="controls">
+        <input type="number" inputmode="decimal" step="0.01" min="0" placeholder="Añadir ingreso (€)" aria-label="Importe del ingreso extra">
+        <button class="add" onclick="addExpense(this)">Añadir ingreso</button>
+        <button class="reset" onclick="resetCategory(this)">Reiniciar</button>
+      </div>
+    </div>
+    <div class="card" style="--accent:var(--piso)" data-name="Gastos piso" data-kind="expense">
+      <div class="row">
+        <div><div class="name">Gastos piso</div><div class="muted">Sin límite de presupuesto · resta de tu disponible</div></div>
+      </div>
+      <div class="movement-total">Gastado: <span class="spent">0,00</span> €</div>
+      <div class="controls">
+        <input type="number" inputmode="decimal" step="0.01" min="0" placeholder="Añadir gasto (€)" aria-label="Importe de gastos piso">
+        <button class="add" onclick="addExpense(this)">Añadir gasto</button>
+        <button class="reset" onclick="resetCategory(this)">Reiniciar</button>
+      </div>
+    </div>
+  </div>
 
+  <div class="section-title">Ahorro</div>
+  <div class="card savings-card" id="savingsCard" style="--accent:var(--ahorro)">
+    <div class="name">Ahorro del mes</div>
+    <div class="muted">Se calcula automáticamente con el dinero que no gastas.</div>
+    <div class="savings-amount" id="savingsAmount">456,00 €</div>
+    <div class="muted" id="savingsExplanation">Es lo que te queda si no realizas más gastos.</div>
   </div>
 </div>
 
 <script>
-const FIXED = 6.49 + 27;
-
+const FIXED_CENTS = 649 + 2700;
 let currentDate = new Date();
-currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+currentDate = new Date(currentDate.getFullYear(),currentDate.getMonth(),1);
 
-function money(n){
-  return n.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' €';
-}
+const euro = cents => (cents / 100).toLocaleString('es-ES',{style:'currency',currency:'EUR'});
+const cents = value => Math.round((Number(value) + Number.EPSILON) * 100);
+const movementCards = () => document.querySelectorAll('.card[data-name]');
 
 function monthKey(){
   return currentDate.getFullYear() + '-' + String(currentDate.getMonth()+1).padStart(2,'0');
 }
-
 function storageKey(card){
-  return 'misgastos_' + monthKey() + '_' + card.dataset.name.toLowerCase();
+  // These are exactly the original storage keys for Comida, Gasoil and Ocio.
+  return 'misgastos_' + monthKey() + '_' + (card.dataset.storage || card.dataset.name.toLowerCase());
 }
-
 function budgetStorageKey(){
   return 'misgastos_' + monthKey() + '_monthlyBudget';
 }
-
 function updateMonthTitle(){
-  const txt = currentDate.toLocaleDateString('es-ES',{month:'long',year:'numeric'});
-  document.getElementById('monthTitle').textContent = txt;
+  document.getElementById('monthTitle').textContent = currentDate.toLocaleDateString('es-ES',{month:'long',year:'numeric'});
 }
-
 function changeMonth(delta){
-  currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth()+delta, 1);
+  currentDate = new Date(currentDate.getFullYear(),currentDate.getMonth()+delta,1);
   loadMonth();
 }
-
 function loadMonth(){
   updateMonthTitle();
-
-  document.querySelectorAll('.card').forEach(card=>{
-    const saved = parseFloat(localStorage.getItem(storageKey(card)) || '0');
-    card.dataset.spent = saved;
+  movementCards().forEach(card=>{
+    const saved = Number(localStorage.getItem(storageKey(card)) || '0');
+    card.dataset.spent = Number.isFinite(saved) && saved >= 0 ? saved : 0;
     renderCard(card);
+    card.querySelector('input').value = '';
   });
-
   const savedBudget = localStorage.getItem(budgetStorageKey());
   document.getElementById('monthlyBudget').value = savedBudget !== null ? savedBudget : '489.49';
-
   updateSummary();
 }
-
 function addExpense(btn){
   const card = btn.closest('.card');
   const input = card.querySelector('input');
-  const value = parseFloat(input.value);
-
-  if(isNaN(value) || value <= 0){
-    alert('Introduce una cantidad válida.');
+  const amount = Number(input.value);
+  if(input.value.trim()==='' || !Number.isFinite(amount) || amount <= 0){
+    alert('Introduce una cantidad válida mayor que 0.');
     return;
   }
-
-  const current = parseFloat(card.dataset.spent || '0');
-  const updated = current + value;
-  card.dataset.spent = updated;
-  localStorage.setItem(storageKey(card), updated);
+  const updatedCents = cents(card.dataset.spent || '0') + cents(amount);
+  card.dataset.spent = (updatedCents / 100).toFixed(2);
+  localStorage.setItem(storageKey(card),card.dataset.spent);
   input.value = '';
   renderCard(card);
   updateSummary();
 }
-
 function resetCategory(btn){
   const card = btn.closest('.card');
-  if(confirm('¿Quieres reiniciar esta categoría a 0 €?')){
-    card.dataset.spent = 0;
-    localStorage.setItem(storageKey(card), '0');
+  if(confirm('¿Quieres poner ' + card.dataset.name + ' a 0 € en este mes?')){
+    card.dataset.spent = '0';
+    localStorage.setItem(storageKey(card),'0');
     renderCard(card);
     updateSummary();
   }
 }
-
 function renderCard(card){
-  const budget = parseFloat(card.dataset.budget);
-  const spent = parseFloat(card.dataset.spent || '0');
-  const pct = Math.min((spent / budget) * 100, 100);
-  const name = card.dataset.name;
+  const spentCents = cents(card.dataset.spent || '0');
+  card.querySelector('.spent').textContent = (spentCents/100).toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2});
+  if(!card.hasAttribute('data-budget')) return; // No limit for Compras varias, Ingreso extra or Gastos piso.
+  const budgetCents = cents(card.dataset.budget);
+  card.querySelector('.fill').style.width = Math.min(spentCents/budgetCents*100,100) + '%';
+  const left = budgetCents - spentCents;
   const status = card.querySelector('.status');
-
-  card.querySelector('.spent').textContent =
-    spent.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2});
-  card.querySelector('.fill').style.width = pct + '%';
-
-  if(name === 'Ahorro'){
-    const left = budget - spent;
-    if(left > 0){
-      status.textContent = 'Te faltan ' + money(left) + ' por ahorrar';
-      status.classList.remove('danger');
-    }else{
-      status.textContent = 'Objetivo de ahorro cumplido';
-      status.classList.remove('danger');
-    }
-  }else{
-    const left = budget - spent;
-    if(left >= 0){
-      status.textContent = 'Te quedan ' + money(left);
-      status.classList.remove('danger');
-    }else{
-      status.textContent = 'Te has pasado ' + money(Math.abs(left));
-      status.classList.add('danger');
-    }
-  }
+  status.textContent = left >= 0 ? 'Te quedan ' + euro(left) : 'Te has pasado ' + euro(-left);
+  status.classList.toggle('danger',left < 0);
 }
-
 function updateSummary(){
-  let variableSpent = 0;
-  let savings = 0;
-
-  document.querySelectorAll('.card').forEach(card=>{
-    const val = parseFloat(card.dataset.spent || '0');
-    if(card.dataset.name === 'Ahorro') savings += val;
-    else variableSpent += val;
+  let spent = FIXED_CENTS;
+  let income = 0;
+  movementCards().forEach(card=>{
+    const amount = cents(card.dataset.spent || '0');
+    if(card.dataset.kind === 'income') income += amount;
+    else spent += amount;
   });
-
-  const budget = parseFloat(document.getElementById('monthlyBudget').value || '0');
-  localStorage.setItem(budgetStorageKey(), budget);
-
-  const assigned = FIXED + variableSpent + savings;
-  const remaining = budget - assigned;
-
-  document.getElementById('totalBudget').textContent = money(budget);
-  document.getElementById('totalSpent').textContent = money(assigned);
-  document.getElementById('remaining').textContent = money(remaining);
-  document.getElementById('remaining').style.color = remaining < 0 ? 'var(--danger)' : 'inherit';
+  const budgetInput = document.getElementById('monthlyBudget');
+  const budget = Number(budgetInput.value);
+  if(!Number.isFinite(budget) || budget < 0) return;
+  const total = cents(budget);
+  const left = total + income - spent;
+  document.getElementById('totalBudget').textContent = euro(total);
+  document.getElementById('totalIncome').textContent = '+' + euro(income);
+  document.getElementById('totalSpent').textContent = euro(spent);
+  const remaining = document.getElementById('remaining');
+  remaining.textContent = euro(left);
+  remaining.style.color = left < 0 ? 'var(--danger)' : 'inherit';
+  const savingsCard = document.getElementById('savingsCard');
+  savingsCard.classList.toggle('overdrawn',left < 0);
+  document.getElementById('savingsAmount').textContent = euro(Math.max(0,left));
+  const monthIsPast = currentDate < new Date(new Date().getFullYear(),new Date().getMonth(),1);
+  document.getElementById('savingsExplanation').textContent = left < 0
+    ? 'Este mes has gastado ' + euro(-left) + ' más de lo disponible.'
+    : monthIsPast ? 'Dinero que no gastaste ese mes.' : 'Dinero que te queda sin gastar; irá cambiando con tus movimientos.';
+  // Keep the old budget key so updates do not erase existing months or budgets.
+  localStorage.setItem(budgetStorageKey(),budget);
 }
-
 function updateAll(){
+  const budgetInput = document.getElementById('monthlyBudget');
+  if(budgetInput.value.trim()==='' || !Number.isFinite(Number(budgetInput.value)) || Number(budgetInput.value)<0){
+    alert('Introduce un presupuesto válido.');
+    return;
+  }
   updateSummary();
 }
-
+document.querySelectorAll('.card[data-name] input').forEach(input=>{
+  input.addEventListener('keydown',event=>{
+    if(event.key === 'Enter') input.closest('.card').querySelector('.add').click();
+  });
+});
 loadMonth();
 </script>
 </body>
